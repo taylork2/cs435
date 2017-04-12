@@ -6,6 +6,8 @@
 
 using namespace std;
 
+string array; //contains non repeated characters in message 
+
 //Usage function to tell the user how to run the program  
 void usage(char *progname, string msg){
     cerr << "Error: " << msg << endl;
@@ -20,8 +22,12 @@ struct minHeap{
 
 void comFreq(char * buffer){
     for (char* it=buffer; *it; it++){
-        cout << *it;
+        if (array.find(*it) != string::npos){
+            array.append(*it);
+        }
     }
+
+    cout << array;
 }
 
 int main(int argc, char *argv[]){  
@@ -44,7 +50,6 @@ int main(int argc, char *argv[]){
             usage(argv[0], "Cannot open file, '" + string(argv[1]) + "'.");
             return 1; 
         }
-
         comFreq(buffer);
 
     } else {
