@@ -16,6 +16,7 @@ void usage(char *progname, string msg){
     cerr << "Usage is: " << progname<< " [filename]" << endl;
 }
 
+//minHeap implementation
 struct minHeap{
     char data;
     int freq;
