@@ -3,10 +3,12 @@
 #include<fstream>
 #include<iostream>
 #include<string>
+#include<vector>
 
 using namespace std;
 
 string array = ""; //contains non repeated characters in message 
+vector<int> freq; //contains the frequecies of each letter in array 
 
 //Usage function to tell the user how to run the program  
 void usage(char *progname, string msg){
@@ -15,15 +17,19 @@ void usage(char *progname, string msg){
 }
 
 struct minHeap{
-    char letter;
+    char data;
     int freq;
     minHeap *left, *right;
 };
 
+//compute the frequencies of each letter and store in freq array 
 void comFreq(char * buffer){
     for (char* it=buffer; *it; it++){
         if (array.find(*it) == string::npos){
             array+=*it;
+            freq.push_back(1);
+        } else {
+            freq[array.find(*it)]++;
         }
     }
 }
