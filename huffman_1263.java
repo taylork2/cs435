@@ -3,6 +3,7 @@
 import java.io.*;
 
 public class huffman_1263 {
+
     public huffman_1263(){}
 
     //read in the file contents 
@@ -31,11 +32,15 @@ public class huffman_1263 {
         return message;
     }
 
+
+
     public static void main (String args[]){
-        if (args.length > 0){
+        if (args.length == 1){
             System.out.println("Hello world!"); 
             huffman_1263 test = new huffman_1263();
             System.out.println(test.readFile(args[0]));
+        } else {
+            System.out.println("Incorrect format");
         }
         
     }
