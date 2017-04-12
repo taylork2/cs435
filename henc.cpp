@@ -6,7 +6,7 @@
 
 using namespace std;
 
-string array; //contains non repeated characters in message 
+string array = ""; //contains non repeated characters in message 
 
 //Usage function to tell the user how to run the program  
 void usage(char *progname, string msg){
@@ -22,12 +22,10 @@ struct minHeap{
 
 void comFreq(char * buffer){
     for (char* it=buffer; *it; it++){
-        if (array.find(*it) != string::npos){
-            array.append(*it);
+        if (array.find(*it) == string::npos){
+            array+=*it;
         }
     }
-
-    cout << array;
 }
 
 int main(int argc, char *argv[]){  
