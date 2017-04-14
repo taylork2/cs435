@@ -16,11 +16,29 @@ void usage(char *progname, string msg){
     cerr << "Usage is: " << progname<< " [filename]" << endl;
 }
 
-struct minHeap{
+//minHeap implementation
+struct minHeapNode{
     char data;
     int freq;
-    minHeap *left, *right;
+    minHeapNode *left, *right;
 };
+
+struct minHeap{
+    int size;
+    vector<minHeapNode> nodes; 
+};
+
+minHeap buildMinHeap(char * array, vector<int> freq){
+    minHeap heap = new minHeap();
+}
+
+minHeapNode minHeapify(minHeapNode A, int i){
+    for (minHeapNode* it; *it; it++){
+        cout << *it.data << endl;
+    }
+
+    return A;
+}
 
 //compute the frequencies of each letter and store in freq array 
 void comFreq(char * buffer){
