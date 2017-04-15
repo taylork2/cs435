@@ -29,9 +29,9 @@ struct minHeap{
     vector<minHeapNode> nodes; 
 };
 
-void printHeap(minHeap A){
-    vector<minHeapNode> nodes = A.nodes;
-    for (int i=0; i<A.size; i++){
+void printHeap(minHeap * A){
+    vector<minHeapNode> nodes = A->nodes;
+    for (int i=0; i<A->size; i++){
         cout << nodes[i].data << nodes[i].freq << endl;
     }
 }
@@ -80,17 +80,19 @@ struct minHeap createMinHeap(string dataArray, vector<int> freq){
     return heap;
 }
 
-struct minHeapNode * extractMin(minHeap * A){
-    minHeapNode * min = &A->nodes[0];
-    A->nodes[0] = A->nodes[A->size-1];
+struct minHeapNode extractMin(minHeap * A){
+    int length = A->size;
+    minHeapNode min = A->nodes[0];
+    swapNodes(A, 0, length-1);
+    (A->nodes).erase((A->nodes).begin()+length-1);
     A->size--;
     buildMinHeap(A);
     return min;
 }
 
-void insertMinHeapNode(minHeap * A, minHeapNode node){
+void insertMinHeapNode(minHeap * A, minHeapNode * node){
+    A->nodes.push_back(*node);
     A->size++;
-    A->nodes[A->size-1] = node;
     buildMinHeap(A);
 }
 
@@ -106,22 +108,27 @@ void comFreq(char * buffer){
     }
 }
 
-struct minHeapNode * buildHuffmanTree(minHeap * A){
+struct minHeapNode buildHuffmanTree(minHeap * A){
     while (A->size > 1){
-        minHeapNode * a = (minHeapNode *)extractMin(A);
-        minHeapNode * b = (minHeapNode *)extractMin(A);
-        minHeapNode c = minHeapNode();
-        c.freq = a->freq + b->freq;
-        c.data = '$';
-        c.left = a;
-        c.right = b;
+        minHeapNode a = extractMin(A);
+        minHeapNode b = extractMin(A);
+        minHeapNode * c = new minHeapNode();
+        c->freq = a.freq + b.freq;
+        c->data = '$';
+        c->left = &a;
+        c->right = &b;
         insertMinHeapNode(A, c);
+        cout << c->data << c->left->freq << endl;
+        // cout << c->right->data << c->right->freq << endl;
     }
+    cout << A->nodes[0].data << A->nodes[0].freq << endl;
     return extractMin(A);
 }
 
+
 void printHuffmanCodes(minHeapNode * root, string code){
-    if (!root->left && !root->right){
+    cout << root->data << root->left->data << endl;
+    if (!(root->left) && !(root->right)){
         cout << root->data << code << endl;
     }
     
@@ -158,8 +165,12 @@ int main(int argc, char *argv[]){
 
         comFreq(buffer);
         minHeap heap = createMinHeap(dataArray, freq);
-        printHeap(heap);
-        minHeapNode * root = buildHuffmanTree(&heap);
+        // printHeap(&heap);
+        minHeapNode root = buildHuffmanTree(&heap);
+        // cout << root.left->data << root.left->freq << endl;
+        // cout << root.right->data << root.right->freq << endl;
+        // printHuffmanCodes(&root, "");
+
 
     } else {
         usage(argv[0], "Incorrect number of arguments.");
