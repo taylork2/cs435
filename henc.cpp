@@ -119,11 +119,6 @@ void computeFreq(char * message, int msgLength){
             freq[dataArray.find(*it)]++;
         }
     }
-    //signals end of file 
-    // dataArray+='\0';
-    // freq.push_back(1);
-    // codes.push_back("");
-
 }
 
 //creates the huffman tree to find the codes from 
@@ -147,7 +142,7 @@ struct minHeapNode * buildHuffmanTree(minHeap * A){
 void printHuffmanCodes(minHeapNode * root, char code[], int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
-        cout << root->data << code << endl;
+        // cout << root->data << code << endl;
         codes.at(dataArray.find(root->data)) = string(code);
     }
 
@@ -168,17 +163,15 @@ void encodeMessage(const char * fileName, char * message){
     for (char* it=message; *it; it++){
         string code = codes[dataArray.find(*it)];
         outfile << code;
-        cout << code;
+        // cout << code;
     }
 
-    char msgEnd = '\0';
-    // string msgEnd = codes[dataArray.find('\0')];
-    outfile.put('\0');
-    cout << msgEnd << endl;    
+    outfile << '\0';
+    // cout << msgEnd << endl;    
 
     for (int i=0; i<dataArray.length(); i++){
         outfile << dataArray[i] << codes[i] << '\0';
-        cout << dataArray[i] << codes[i] << endl;
+        // cout << dataArray[i] << codes[i] << endl;
     }
 
     outfile.close();
@@ -207,16 +200,13 @@ int main(int argc, char *argv[]){
 
         computeFreq(message, msgLength);
         minHeap heap = createMinHeap(dataArray, freq);
-        printHeap(&heap);
-        // cout << "====" << endl;
+        // printHeap(&heap);
         minHeapNode * root = buildHuffmanTree(&heap);
-        cout << "----------" << endl;
         char code[msgLength+1];
 
         string ofname = string(argv[1]) + ".huf"; 
         printHuffmanCodes(root, code, 0);
 
-        cout << "---------------" << endl;
         encodeMessage(ofname.c_str(), message);
 
     } else {

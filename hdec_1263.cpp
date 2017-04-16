@@ -4,8 +4,10 @@
 #include<iostream>
 #include<string>
 #include<vector>
-#include<math.h>
+// #include<math.h>
 #include<map>
+#include<cstring>
+#include<alloca.h>
 
 using namespace std;
 
@@ -23,11 +25,12 @@ string decode(char * message){
     for (char *it=message; *it; it++){
         encStr += *it;
         if (codes.find(encStr) != codes.end()){
-            cout << codes[encStr];
+            // cout << codes[encStr];
             decMsg += codes[encStr];
             encStr = "";
         }
     }
+    // cout << decMsg;
     return decMsg;
 }
 
@@ -64,15 +67,25 @@ int main(int argc, char *argv[]){
             //     cout << it->first << " " << it->second << endl;
             // }
             infile.close();
-
-            decode(message);
             
         } else {
             usage(argv[0], "Cannot open file, '" + fileName + "'.");
             return 1; 
         }
-        // cout << message << endl;
-        // getMsg(message);
+
+        string decMsg = decode(message);
+
+        //rewrite file with decoded message 
+        ofstream outfile (argv[1], ios::binary|ios::out|ios::trunc);
+        outfile << decMsg;
+
+        fileName = fileName.substr(0, fileName.find_last_of("."));
+        char * newFileName = (char *)alloca(fileName.size() + 1);
+        memcpy(newFileName, fileName.c_str(), fileName.size()+1);
+
+        rename(argv[1], newFileName);
+        outfile.close();
+
     } else {
         usage(argv[0], "Incorrect number of arguments.");
         return 1;
