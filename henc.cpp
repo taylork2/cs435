@@ -8,9 +8,9 @@
 
 using namespace std;
 
-int MAXLENGTH = 100000; //random maxlength of huffman codes - to be set later 
 string dataArray = ""; //contains non repeated characters in message 
 vector<int> freq; //contains the frequecies of each letter in array, using dataArray as key 
+vector<string> codes;
 
 //Usage function to tell the user how to run the program  
 void usage(char *progname, string msg){
@@ -109,15 +109,21 @@ void insertMinHeapNode(minHeap * A, minHeapNode * node){
 }
 
 //compute the frequencies of each letter stored in dataArray and store in freq array
-void computeFreq(char * message){
+void computeFreq(char * message, int msgLength){
     for (char* it=message; *it; it++){
         if (dataArray.find(*it) == string::npos){
             dataArray+=*it;
             freq.push_back(1);
+            codes.push_back("");
         } else {
             freq[dataArray.find(*it)]++;
         }
     }
+    //signals end of file 
+    dataArray+='\0';
+    freq.push_back(1);
+    codes.push_back("");
+
 }
 
 //creates the huffman tree to find the codes from 
@@ -138,32 +144,45 @@ struct minHeapNode * buildHuffmanTree(minHeap * A){
 }
 
 
-int printHuffmanCodes(minHeapNode * root, char code[], int index, vector<char*> codes){
+void printHuffmanCodes(minHeapNode * root, char code[], int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
         cout << root->data << code << endl;
-        codes.at(dataArray.find(root->data)) = code;
+        codes.at(dataArray.find(root->data)) = string(code);
     }
 
     if (root->left){
         code[index] = '0';
-        printHuffmanCodes(root->left, code, index+1, codes);
+        printHuffmanCodes(root->left, code, index+1);
     } 
     if (root->right){
         code[index] = '1';
-        printHuffmanCodes(root->right, code, index+1, codes);
+        printHuffmanCodes(root->right, code, index+1);
     }
-    return 0;
+
 }
 
-void encodeMessage(){
+//create new file and write huffman encoded message to it 
+void encodeMessage(const char * fileName, char * message){
+    ofstream outfile (fileName);
+    for (char* it=message; *it; it++){
+        string code = codes[dataArray.find(*it)];
+        outfile << code;
+    }
+    string msgEnd = codes[dataArray.find('\0')];
+    outfile << msgEnd << endl;
+    
+    for (int i=0; i<dataArray.length(); i++){
+        outfile << dataArray[i] << codes[i] << endl;
+    }
 
+    outfile.close();
 }
 
 int main(int argc, char *argv[]){  
     if (argc == 2){ //to ensure that there is a filename argument 
 
-        int msgLength;
+        int msgLength; //length of message 
         char * message; //will hold the message contents 
     
         //the following reads in the binary file 
@@ -181,17 +200,20 @@ int main(int argc, char *argv[]){
             return 1; 
         }
 
-        computeFreq(message);
+        computeFreq(message, msgLength);
         minHeap heap = createMinHeap(dataArray, freq);
         printHeap(&heap);
         // cout << "====" << endl;
         minHeapNode * root = buildHuffmanTree(&heap);
         cout << "----------" << endl;
-        char code[msgLength];
-        vector<char*> codes(msgLength); //vector to store huffman codes using message array as key 
-        printHuffmanCodes(root, code, 0, codes);
-        // cout << root->left->data << endl;
-        // cout << root->right->right->data << root->right->right->freq << endl;
+        char code[msgLength+1];
+
+        string ofname = string(argv[1]) + ".huf"; 
+        printHuffmanCodes(root, code, 0);
+
+        cout << "---------------" << endl;
+        encodeMessage(ofname.c_str(), message);
+
 
     } else {
         usage(argv[0], "Incorrect number of arguments.");
