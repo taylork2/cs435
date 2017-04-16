@@ -120,9 +120,9 @@ void computeFreq(char * message, int msgLength){
         }
     }
     //signals end of file 
-    dataArray+='\0';
-    freq.push_back(1);
-    codes.push_back("");
+    // dataArray+='\0';
+    // freq.push_back(1);
+    // codes.push_back("");
 
 }
 
@@ -164,16 +164,21 @@ void printHuffmanCodes(minHeapNode * root, char code[], int index){
 
 //create new file and write huffman encoded message to it 
 void encodeMessage(const char * fileName, char * message){
-    ofstream outfile (fileName);
+    ofstream outfile (fileName, ios::binary);
     for (char* it=message; *it; it++){
         string code = codes[dataArray.find(*it)];
         outfile << code;
+        cout << code;
     }
-    string msgEnd = codes[dataArray.find('\0')];
-    outfile << msgEnd << endl;
-    
+
+    char msgEnd = '\0';
+    // string msgEnd = codes[dataArray.find('\0')];
+    outfile.put('\0');
+    cout << msgEnd << endl;    
+
     for (int i=0; i<dataArray.length(); i++){
-        outfile << dataArray[i] << codes[i] << endl;
+        outfile << dataArray[i] << codes[i] << '\0';
+        cout << dataArray[i] << codes[i] << endl;
     }
 
     outfile.close();
@@ -213,7 +218,6 @@ int main(int argc, char *argv[]){
 
         cout << "---------------" << endl;
         encodeMessage(ofname.c_str(), message);
-
 
     } else {
         usage(argv[0], "Incorrect number of arguments.");
