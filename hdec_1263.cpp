@@ -19,11 +19,11 @@ void usage_1263(char *progname, string msg){
 }
 
 //uses the codes map to convert the message from huffman 
-string decode_1263(char * message){
+string decode_1263(string message){
     string encStr = "";
     string decMsg = "";
-    for (char *it=message; *it; it++){
-        encStr += *it;
+    for (int i=0; i<message.length(); i++){
+        encStr += message[i];
         if (codes.find(encStr) != codes.end()){
             // cout << codes[encStr];
             decMsg += codes[encStr];
@@ -45,7 +45,8 @@ int main(int argc, char *argv[]){
         }
         
         int msgLength; //length of message 
-        char * message; //will hold the encoded message contents 
+        char * message; //will hold the encoded file contents 
+        string mess; //will hold just the message to be decoded
     
         //the following reads in the binary file 
         ifstream infile (argv[1], ios::binary); 
@@ -55,13 +56,31 @@ int main(int argc, char *argv[]){
             infile.seekg(0, ios::beg);
 
             message = new char[msgLength];
-            infile.getline(message,msgLength, '\0');
-            char * code = new char[msgLength];
+            infile.read(message,msgLength);
+            string msgStr = string(message);
+            string delimiter = "END";
+
+            size_t msgEnd = msgStr.find(delimiter);
+            mess = msgStr.substr(0, msgEnd);
+            msgStr.erase(0, msgEnd + delimiter.length());
+
+            string codeStr;
+            size_t pos = 0;
+            int test = 0;
 
             //maps the code to the character it stands for 
-            while (infile.getline(code, msgLength, '\0')){
-                string codeStr = string(code);
-                codes[codeStr.substr(1,codeStr.length())] = code[0];
+            while ((pos = msgStr.find(delimiter)) != string::npos){
+                // if (test > 100){
+                //     break;
+                // }
+                test ++;
+                codeStr = msgStr.substr(0, pos);
+                // if (codeStr.length() == 0){
+                //     continue;
+                // }
+                codes[codeStr.substr(1,codeStr.length())] = codeStr[0];
+                msgStr.erase(0, pos + delimiter.length());
+                cout << codeStr << endl;
             }
 
             infile.close();
@@ -71,19 +90,20 @@ int main(int argc, char *argv[]){
             return 1; 
         }
 
-        string decMsg = decode_1263(message);
-
+        cout << mess << endl;
+        string decMsg = decode_1263(mess);
+        cout << decMsg << endl;
         //overwrites original file with decoded message 
-        ofstream outfile (argv[1], ios::binary|ios::out|ios::trunc);
-        outfile << decMsg;
+        // ofstream outfile (argv[1], ios::binary|ios::out|ios::trunc);
+        // outfile << decMsg;
 
-        //rename the file without .huf 
-        fileName = fileName.substr(0, fileName.find_last_of("."));
-        char * newFileName = (char *)alloca(fileName.size() + 1);
-        memcpy(newFileName, fileName.c_str(), fileName.size()+1);
-        rename(argv[1], newFileName);
+        // //rename the file without .huf 
+        // fileName = fileName.substr(0, fileName.find_last_of("."));
+        // char * newFileName = (char *)alloca(fileName.size() + 1);
+        // memcpy(newFileName, fileName.c_str(), fileName.size()+1);
+        // rename(argv[1], newFileName);
 
-        outfile.close();
+        // outfile.close();
 
     } else {
         usage_1263(argv[0], "Incorrect number of arguments.");

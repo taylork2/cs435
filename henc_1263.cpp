@@ -5,12 +5,15 @@
 #include<string>
 #include<vector>
 #include<math.h>
+#include<map>
+#include<limits>
 
 using namespace std;
 
 string dataArray = ""; //contains non repeated characters in message 
-vector<int> freq; //contains the frequecies of each letter in array, using dataArray as key 
-vector<string> codes; //will contain the huffman codes for each letter 
+map<char, string> codeMap; //where the string is the huffman code representing the char
+map<char, int> freqMap; //char: data, int: number of times character appears in message
+
 
 //usage function to tell the user how to run the program  
 void usage_1263(char *progname, string msg){
@@ -71,14 +74,14 @@ void buildMinHeap_1263(minHeap_1263 * A){
     }
 }
 
-//create minHeap from 2 vectors 
-struct minHeap_1263 createMinHeap(string dataArray, vector<int> freq){
+//create minHeap from map
+struct minHeap_1263 createMinHeap_1263(map<char,int> freqMap){
     minHeap_1263 heap = minHeap_1263();
-    heap.size = dataArray.length();
-    for (int i = 0; i<dataArray.length(); i++){
+    heap.size = freqMap.size();
+    for (map<char,int>::iterator it=freqMap.begin();it!=freqMap.end(); it++){
         minHeapNode_1263 * node = new minHeapNode_1263();
-        node->data = dataArray[i];
-        node->freq = freq[i];
+        node->data = it->first;
+        node->freq = it->second;
         (heap.nodes).push_back(node);
     }
     buildMinHeap_1263(&heap);
@@ -86,7 +89,7 @@ struct minHeap_1263 createMinHeap(string dataArray, vector<int> freq){
 }
 
 //min will be first node, extract from minHeap and buildMinHeap then return 
-struct minHeapNode_1263 * extractMin(minHeap_1263 * A){
+struct minHeapNode_1263 * extractMin_1263(minHeap_1263 * A){
     int length = A->size;
 
     swapNodes_1263(A, 0, length-1);
@@ -109,14 +112,12 @@ void insertminHeapNode_1263(minHeap_1263 * A, minHeapNode_1263 * node){
 }
 
 //compute the frequencies of each letter stored in dataArray and store in freq array
-void computeFreq_1263(char * message, int msgLength){
-    for (char* it=message; *it; it++){
-        if (dataArray.find(*it) == string::npos){
-            dataArray+=*it;
-            freq.push_back(1);
-            codes.push_back(""); //necessary for indexing codes using dataArray later
+void computeFreq_1263(vector<char> message){
+    for (int i=0; i<message.size(); i++){
+        if (freqMap.find(message[i]) == freqMap.end()){
+            freqMap[message[i]] = 1;
         } else {
-            freq[dataArray.find(*it)]++;
+            freqMap[message[i]]++;
         }
     }
 }
@@ -125,8 +126,8 @@ void computeFreq_1263(char * message, int msgLength){
 struct minHeapNode_1263 * buildHuffmanTree_1263(minHeap_1263 * A){
     struct minHeapNode_1263 *a, *b, *c;
     while (A->size > 1){
-        struct minHeapNode_1263 *a = extractMin(A);
-        struct minHeapNode_1263 *b = extractMin(A);
+        struct minHeapNode_1263 *a = extractMin_1263(A);
+        struct minHeapNode_1263 *b = extractMin_1263(A);
         struct minHeapNode_1263 *c = new minHeapNode_1263();
         c->freq = a->freq + b->freq;
         c->data = '#'; //arbitrary character 
@@ -135,14 +136,15 @@ struct minHeapNode_1263 * buildHuffmanTree_1263(minHeap_1263 * A){
         insertminHeapNode_1263(A, c);
     }
 
-    return extractMin(A); //this will be root node of huffman tree 
+    return extractMin_1263(A); //this will be root node of huffman tree 
 }
 
 
 void printHuffmanCodes_1263(minHeapNode_1263 * root, string code, int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
-        codes.at(dataArray.find(root->data)) = code;
+        codeMap[root->data] = code;
+        // codes.at(dataArray.find(root->data)) = code;
     }
 
     if (root->left){ 
@@ -166,20 +168,21 @@ void printHuffmanCodes_1263(minHeapNode_1263 * root, string code, int index){
 }
 
 //create new file and write huffman encoded message to it 
-void encodeMessage_1263(const char * fileName, char * message){
+void encodeMessage_1263(const char * fileName, vector<char> message){
     ofstream outfile (fileName, ios::binary);
-    for (char* it=message; *it; it++){
-        string code = codes[dataArray.find(*it)];
+    for (int i=0; i<message.size(); i++){
+        string code = codeMap[message[i]];
         outfile << code;
         // cout << code << endl;
     }
 
-    outfile << '\0'; //to mark the end of message 
+    string endMsg = "END";
+    outfile << endMsg;
 
     //print the character then huffman code as a key for decoding 
-    for (int i=0; i<dataArray.length(); i++){
-        outfile << dataArray[i] << codes[i] << '\0';
-        // cout << dataArray[i] << codes[i] << endl;
+    for (map<char, string>::iterator it=codeMap.begin(); it!=codeMap.end(); it++){
+        outfile << it->first << it->second << endMsg;
+        // cout << it->first << it->second << endl;
     }
 
     outfile.close();
@@ -188,34 +191,39 @@ void encodeMessage_1263(const char * fileName, char * message){
 int main(int argc, char *argv[]){  
     if (argc == 2){ //to ensure that there is a filename argument 
 
-        int msgLength; //length of message 
-        char * message; //will hold the message contents 
+        streamsize msgLength = 0; //length of message 
+         
     
         //the following reads in the binary file 
-        ifstream infile (argv[1], ios::binary); 
+        ifstream infile (argv[1], ios::in|ios::binary); 
         if (infile.is_open()){
-            infile.seekg(0, ios::end);
-            msgLength = infile.tellg();
-            infile.seekg(0, ios::beg);
 
-            message = new char[msgLength];
-            infile.read(message, msgLength);
+            //gets the length of the infile 
+            infile.ignore( numeric_limits<streamsize>::max() );
+            msgLength = infile.gcount();
+            infile.clear();   //  Since ignore will have set eof.
+            infile.seekg( 0, std::ios_base::beg );
+            
+            vector<char> message(msgLength); //will hold the message contents    
+            infile.read(message.data(), msgLength);
             infile.close();
+            
+            computeFreq_1263(message);
+
+            minHeap_1263 heap = createMinHeap_1263(freqMap);
+            // printHeap_1263(&heap);
+            minHeapNode_1263 * root = buildHuffmanTree_1263(&heap);
+            string code; 
+
+            printHuffmanCodes_1263(root, code, 0);
+
+            string ofname = string(argv[1]) + ".huf"; 
+            encodeMessage_1263(ofname.c_str(), message);
+
         } else {
             usage_1263(argv[0], "Cannot open file, '" + string(argv[1]) + "'.");
             return 1; 
         }
-
-        computeFreq_1263(message, msgLength);
-        minHeap_1263 heap = createMinHeap(dataArray, freq);
-        // printHeap_1263(&heap);
-        minHeapNode_1263 * root = buildHuffmanTree_1263(&heap);
-        string code; 
-
-        printHuffmanCodes_1263(root, code, 0);
-
-        string ofname = string(argv[1]) + ".huf"; 
-        encodeMessage_1263(ofname.c_str(), message);
 
     } else {
         usage_1263(argv[0], "Incorrect number of arguments.");
