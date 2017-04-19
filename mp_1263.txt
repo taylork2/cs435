@@ -1,0 +1,6 @@
+TU Taylor    cs435 1263 mp
+
+Option 1: Huffman encoding 
+When reading in binary files, it reads in more than the contents causing junk data to be contained in the message array.
+
+Option 2: Hashing 
