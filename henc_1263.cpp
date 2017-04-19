@@ -10,7 +10,7 @@ using namespace std;
 
 string dataArray = ""; //contains non repeated characters in message 
 vector<int> freq; //contains the frequecies of each letter in array, using dataArray as key 
-vector<string> codes;
+vector<string> codes; //will contain the huffman codes for each letter 
 
 //Usage function to tell the user how to run the program  
 void usage(char *progname, string msg){
@@ -26,7 +26,7 @@ struct minHeapNode{
 };
 
 struct minHeap{
-    int size;
+    int size; //number of nodes in nodes 
     vector<minHeapNode *> nodes; //pointers to each node of minHeap 
 };
 
@@ -114,7 +114,7 @@ void computeFreq(char * message, int msgLength){
         if (dataArray.find(*it) == string::npos){
             dataArray+=*it;
             freq.push_back(1);
-            codes.push_back("");
+            codes.push_back(""); //necessary for indexing codes using dataArray later
         } else {
             freq[dataArray.find(*it)]++;
         }
@@ -129,7 +129,7 @@ struct minHeapNode * buildHuffmanTree(minHeap * A){
         struct minHeapNode *b = extractMin(A);
         struct minHeapNode *c = new minHeapNode();
         c->freq = a->freq + b->freq;
-        c->data = '#';
+        c->data = '#'; //arbitrary character 
         c->left = a;
         c->right = b;
         insertMinHeapNode(A, c);
@@ -166,9 +166,10 @@ void encodeMessage(const char * fileName, char * message){
         // cout << code;
     }
 
-    outfile << '\0';
+    outfile << '\0'; //to mark the end of message 
     // cout << msgEnd << endl;    
 
+    //print the character then huffman code as a key for decoding 
     for (int i=0; i<dataArray.length(); i++){
         outfile << dataArray[i] << codes[i] << '\0';
         // cout << dataArray[i] << codes[i] << endl;
@@ -202,11 +203,11 @@ int main(int argc, char *argv[]){
         minHeap heap = createMinHeap(dataArray, freq);
         // printHeap(&heap);
         minHeapNode * root = buildHuffmanTree(&heap);
-        char code[msgLength+1];
+        char code[msgLength+1]; //the longest the code could possibly be is msgLength
 
-        string ofname = string(argv[1]) + ".huf"; 
         printHuffmanCodes(root, code, 0);
 
+        string ofname = string(argv[1]) + ".huf"; 
         encodeMessage(ofname.c_str(), message);
 
     } else {
