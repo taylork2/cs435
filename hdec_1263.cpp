@@ -1,13 +1,13 @@
 /* TU Taylor    cs435 1263 mp */
 
-#include<fstream>
-#include<iostream>
-#include<string>
-#include<vector>
-#include<map>
-#include<cstring>
-#include<alloca.h>
-#include<limits>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <map>
+#include <cstring>
+#include <alloca.h>
+#include <limits>
 
 using namespace std;
 
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]){
             infile.clear();   //  Since ignore will have set eof.
             infile.seekg( 0, std::ios_base::beg );
             
-            vector<char> message(msgLength); //will hold the message contents    
+            vector<char> message(msgLength); //will hold the entire file contents    
             infile.read(message.data(), msgLength);
             infile.close();
 
@@ -70,12 +70,12 @@ int main(int argc, char *argv[]){
             mess = msgStr.substr(0, msgEnd);
             msgStr.erase(0, msgEnd + delimiter.length());
 
-            string codeStr; 
-            size_t pos = 0;
-            int test = 0;
+            string codeStr; //first element is data, remaining is code
+            size_t pos = 0; //position of delimiter 
+
             //keeps finding delimiter to map the code to the character it stands for 
             while ((pos = msgStr.find(delimiter)) != string::npos){
-                codeStr = msgStr.substr(0, pos); //first element is data, remaining is code
+                codeStr = msgStr.substr(0, pos); 
                 codes[codeStr.substr(1,codeStr.length())] = codeStr[0];
                 msgStr.erase(0, pos + delimiter.length());
             }
