@@ -44,8 +44,7 @@ int main(int argc, char *argv[]){
             usage_1263(argv[0], "Must be .huf file.");
             return 1;
         }
-        
-        int msgLength; //length of message 
+         
         string mess; //will hold just the message to be decoded
     
         //the following reads in the binary file 
@@ -54,7 +53,7 @@ int main(int argc, char *argv[]){
 
             //gets the length of the infile 
             infile.ignore( numeric_limits<streamsize>::max() );
-            msgLength = infile.gcount();
+            int msgLength = infile.gcount(); //message length 
             infile.clear();   //  Since ignore will have set eof.
             infile.seekg( 0, std::ios_base::beg );
             
@@ -62,25 +61,24 @@ int main(int argc, char *argv[]){
             infile.read(message.data(), msgLength);
             infile.close();
 
+            //convert to string to make finding easier 
             string msgStr = string(message.begin(), message.end());
-            string delimiter = "END";
+            string delimiter = "END"; //delimiter as set in encoding 
 
+            //get the message to be decoded
             size_t msgEnd = msgStr.find(delimiter);
             mess = msgStr.substr(0, msgEnd);
             msgStr.erase(0, msgEnd + delimiter.length());
 
-            string codeStr;
+            string codeStr; 
             size_t pos = 0;
             int test = 0;
-
-            //maps the code to the character it stands for 
+            //keeps finding delimiter to map the code to the character it stands for 
             while ((pos = msgStr.find(delimiter)) != string::npos){
-                codeStr = msgStr.substr(0, pos);
+                codeStr = msgStr.substr(0, pos); //first element is data, remaining is code
                 codes[codeStr.substr(1,codeStr.length())] = codeStr[0];
                 msgStr.erase(0, pos + delimiter.length());
             }
-
-            infile.close();
             
         } else {
             usage_1263(argv[0], "Cannot open file, '" + fileName + "'.");

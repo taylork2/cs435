@@ -10,8 +10,7 @@
 
 using namespace std;
 
-string dataArray = ""; //contains non repeated characters in message 
-map<char, string> codeMap; //where the string is the huffman code representing the char
+map<char, string> codeMap; //where the string is the huffman code representing the char: data
 map<char, int> freqMap; //char: data, int: number of times character appears in message
 
 
@@ -114,9 +113,11 @@ void insertminHeapNode_1263(minHeap_1263 * A, minHeapNode_1263 * node){
 //compute the frequencies of each letter stored in dataArray and store in freq array
 void computeFreq_1263(vector<char> message){
     for (int i=0; i<message.size(); i++){
+
+        //if not in map, add new entry 
         if (freqMap.find(message[i]) == freqMap.end()){
             freqMap[message[i]] = 1;
-        } else {
+        } else { //otherwise increment freq count 
             freqMap[message[i]]++;
         }
     }
@@ -144,19 +145,18 @@ void printHuffmanCodes_1263(minHeapNode_1263 * root, string code, int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
         codeMap[root->data] = code;
-        // codes.at(dataArray.find(root->data)) = code;
     }
 
     if (root->left){ 
-        if (code.length() < index+1){
+        if (code.length() < index+1){ //to avoid out_of_range error
             code += "0";
         } else {
             code[index] = '0';
         }
         printHuffmanCodes_1263(root->left, code, index+1);
     } 
+
     if (root->right){
-        
         if (code.length() < index+1){
             code+="1";
         } else {
@@ -170,18 +170,19 @@ void printHuffmanCodes_1263(minHeapNode_1263 * root, string code, int index){
 //create new file and write huffman encoded message to it 
 void encodeMessage_1263(const char * fileName, vector<char> message){
     ofstream outfile (fileName, ios::binary);
+    
     for (int i=0; i<message.size(); i++){
         string code = codeMap[message[i]];
         outfile << code;
         // cout << code << endl;
     }
 
-    string endMsg = "END";
+    string delimiter = "END"; //arbitrary phrase to mark end of message, used for decoding
     outfile << endMsg;
 
-    //print the character then huffman code as a key for decoding 
+    //output to file the character then huffman code as a key for decoding 
     for (map<char, string>::iterator it=codeMap.begin(); it!=codeMap.end(); it++){
-        outfile << it->first << it->second << endMsg;
+        outfile << it->first << it->second << delimiter;
         // cout << it->first << it->second << endl;
     }
 
@@ -191,17 +192,15 @@ void encodeMessage_1263(const char * fileName, vector<char> message){
 int main(int argc, char *argv[]){  
     if (argc == 2){ //to ensure that there is a filename argument 
 
-        streamsize msgLength = 0; //length of message 
-         
-        //the following reads in the binary file 
+        //read in binary files
         ifstream infile (argv[1], ios::in|ios::binary); 
         if (infile.is_open()){
 
-            //gets the length of the infile 
+            //gets the length of the infile, potentially larger than actual file
             infile.ignore( numeric_limits<streamsize>::max() );
-            msgLength = infile.gcount();
+            streamsize msgLength = infile.gcount(); //message length 
             infile.clear();   //  Since ignore will have set eof.
-            infile.seekg( 0, std::ios_base::beg );
+            infile.seekg(0, std::ios_base::beg);
             
             vector<char> message(msgLength); //will hold the message contents    
             infile.read(message.data(), msgLength);
@@ -212,10 +211,11 @@ int main(int argc, char *argv[]){
             minHeap_1263 heap = createMinHeap_1263(freqMap);
             // printHeap_1263(&heap);
             minHeapNode_1263 * root = buildHuffmanTree_1263(&heap);
-            string code; 
 
+            string code; 
             printHuffmanCodes_1263(root, code, 0);
 
+            //make new name of out file 
             string ofname = string(argv[1]) + ".huf"; 
             encodeMessage_1263(ofname.c_str(), message);
 
