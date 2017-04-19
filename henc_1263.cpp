@@ -12,41 +12,41 @@ string dataArray = ""; //contains non repeated characters in message
 vector<int> freq; //contains the frequecies of each letter in array, using dataArray as key 
 vector<string> codes; //will contain the huffman codes for each letter 
 
-//Usage function to tell the user how to run the program  
-void usage(char *progname, string msg){
+//usage function to tell the user how to run the program  
+void usage_1263(char *progname, string msg){
     cerr << "Error: " << msg << endl;
-    cerr << "Usage is: " << progname<< " [filename]" << endl;
+    cerr << "usage is: " << progname<< " [filename]" << endl;
 }
 
 //minHeap implementation
-struct minHeapNode{
+struct minHeapNode_1263{
     char data; //the character of the message
     int freq; //how many times the character occurs in message 
-    struct minHeapNode *left, *right; //left and right trees used in Huffman Tree
+    struct minHeapNode_1263 *left, *right; //left and right trees used in Huffman Tree
 };
 
-struct minHeap{
+struct minHeap_1263{
     int size; //number of nodes in nodes 
-    vector<minHeapNode *> nodes; //pointers to each node of minHeap 
+    vector<minHeapNode_1263 *> nodes; //pointers to each node of minHeap 
 };
 
 //displays the data and freq of each node in heap (for testing)
-void printHeap(minHeap * A){
-    vector<minHeapNode *> nodes = A->nodes;
+void printHeap(minHeap_1263 * A){
+    vector<minHeapNode_1263 *> nodes = A->nodes;
     for (int i=0; i<A->size; i++){
         cout << nodes[i]->data << nodes[i]->freq << endl;
     }
 }
 
 //function to swap nodes in the minHeap 
-void swapNodes(minHeap * A, int i, int j){
-    minHeapNode * t = new minHeapNode();
+void swapNodes(minHeap_1263 * A, int i, int j){
+    minHeapNode_1263 * t = new minHeapNode_1263();
     t = A->nodes[i];
     A->nodes[i] = A->nodes[j];
     A->nodes[j] = t;
 }
 
-void minHeapify(minHeap * A, int i){
+void minHeapify(minHeap_1263 * A, int i){
     int curr = A->nodes[i]->freq;
     
     //if left and right nodes of minHeap  
@@ -65,18 +65,18 @@ void minHeapify(minHeap * A, int i){
     }
 }
 
-void buildMinHeap(minHeap * A){
+void buildMinHeap(minHeap_1263 * A){
     for (int i=floor(A->size/2)-1; i>=0; i--){
         minHeapify(A, i);
     }
 }
 
 //create minHeap from 2 vectors 
-struct minHeap createMinHeap(string dataArray, vector<int> freq){
-    minHeap heap = minHeap();
+struct minHeap_1263 createMinHeap(string dataArray, vector<int> freq){
+    minHeap_1263 heap = minHeap_1263();
     heap.size = dataArray.length();
     for (int i = 0; i<dataArray.length(); i++){
-        minHeapNode * node = new minHeapNode();
+        minHeapNode_1263 * node = new minHeapNode_1263();
         node->data = dataArray[i];
         node->freq = freq[i];
         (heap.nodes).push_back(node);
@@ -86,12 +86,12 @@ struct minHeap createMinHeap(string dataArray, vector<int> freq){
 }
 
 //min will be first node, extract from minHeap and buildMinHeap then return 
-struct minHeapNode * extractMin(minHeap * A){
+struct minHeapNode_1263 * extractMin(minHeap_1263 * A){
     int length = A->size;
 
     swapNodes(A, 0, length-1);
 
-    minHeapNode * min = new minHeapNode();
+    minHeapNode_1263 * min = new minHeapNode_1263();
     min = (A->nodes[length-1]);
 
     (A->nodes).erase((A->nodes).begin()+length-1);
@@ -102,7 +102,7 @@ struct minHeapNode * extractMin(minHeap * A){
 }
 
 
-void insertMinHeapNode(minHeap * A, minHeapNode * node){
+void insertminHeapNode_1263(minHeap_1263 * A, minHeapNode_1263 * node){
     A->nodes.push_back(node);
     A->size++;
     buildMinHeap(A);
@@ -122,36 +122,44 @@ void computeFreq(char * message, int msgLength){
 }
 
 //creates the huffman tree to find the codes from 
-struct minHeapNode * buildHuffmanTree(minHeap * A){
-    struct minHeapNode *a, *b, *c;
+struct minHeapNode_1263 * buildHuffmanTree(minHeap_1263 * A){
+    struct minHeapNode_1263 *a, *b, *c;
     while (A->size > 1){
-        struct minHeapNode *a = extractMin(A);
-        struct minHeapNode *b = extractMin(A);
-        struct minHeapNode *c = new minHeapNode();
+        struct minHeapNode_1263 *a = extractMin(A);
+        struct minHeapNode_1263 *b = extractMin(A);
+        struct minHeapNode_1263 *c = new minHeapNode_1263();
         c->freq = a->freq + b->freq;
         c->data = '#'; //arbitrary character 
         c->left = a;
         c->right = b;
-        insertMinHeapNode(A, c);
+        insertminHeapNode_1263(A, c);
     }
 
     return extractMin(A); //this will be root node of huffman tree 
 }
 
 
-void printHuffmanCodes(minHeapNode * root, char code[], int index){
+void printHuffmanCodes(minHeapNode_1263 * root, string code, int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
-        // cout << root->data << code << endl;
-        codes.at(dataArray.find(root->data)) = string(code);
+        codes.at(dataArray.find(root->data)) = code;
     }
 
-    if (root->left){
-        code[index] = '0';
+    if (root->left){ 
+        if (code.length() < index+1){
+            code += "0";
+        } else {
+            code[index] = '0';
+        }
         printHuffmanCodes(root->left, code, index+1);
     } 
     if (root->right){
-        code[index] = '1';
+        
+        if (code.length() < index+1){
+            code+="1";
+        } else {
+            code[index] = '1';
+        }
         printHuffmanCodes(root->right, code, index+1);
     }
 
@@ -167,7 +175,6 @@ void encodeMessage(const char * fileName, char * message){
     }
 
     outfile << '\0'; //to mark the end of message 
-    // cout << msgEnd << endl;    
 
     //print the character then huffman code as a key for decoding 
     for (int i=0; i<dataArray.length(); i++){
@@ -195,15 +202,15 @@ int main(int argc, char *argv[]){
             infile.read(message, msgLength);
             infile.close();
         } else {
-            usage(argv[0], "Cannot open file, '" + string(argv[1]) + "'.");
+            usage_1263(argv[0], "Cannot open file, '" + string(argv[1]) + "'.");
             return 1; 
         }
 
         computeFreq(message, msgLength);
-        minHeap heap = createMinHeap(dataArray, freq);
+        minHeap_1263 heap = createMinHeap(dataArray, freq);
         // printHeap(&heap);
-        minHeapNode * root = buildHuffmanTree(&heap);
-        char code[msgLength+1]; //the longest the code could possibly be is msgLength
+        minHeapNode_1263 * root = buildHuffmanTree(&heap);
+        string code; 
 
         printHuffmanCodes(root, code, 0);
 
@@ -211,7 +218,7 @@ int main(int argc, char *argv[]){
         encodeMessage(ofname.c_str(), message);
 
     } else {
-        usage(argv[0], "Incorrect number of arguments.");
+        usage_1263(argv[0], "Incorrect number of arguments.");
         return 1;
     }
 
