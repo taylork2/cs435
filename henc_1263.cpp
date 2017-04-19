@@ -193,7 +193,6 @@ int main(int argc, char *argv[]){
 
         streamsize msgLength = 0; //length of message 
          
-    
         //the following reads in the binary file 
         ifstream infile (argv[1], ios::in|ios::binary); 
         if (infile.is_open()){

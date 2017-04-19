@@ -7,6 +7,7 @@
 #include<map>
 #include<cstring>
 #include<alloca.h>
+#include<limits>
 
 using namespace std;
 
@@ -45,19 +46,23 @@ int main(int argc, char *argv[]){
         }
         
         int msgLength; //length of message 
-        char * message; //will hold the encoded file contents 
         string mess; //will hold just the message to be decoded
     
         //the following reads in the binary file 
         ifstream infile (argv[1], ios::binary); 
         if (infile.is_open()){
-            infile.seekg(0, ios::end);
-            msgLength = infile.tellg();
-            infile.seekg(0, ios::beg);
 
-            message = new char[msgLength];
-            infile.read(message,msgLength);
-            string msgStr = string(message);
+            //gets the length of the infile 
+            infile.ignore( numeric_limits<streamsize>::max() );
+            msgLength = infile.gcount();
+            infile.clear();   //  Since ignore will have set eof.
+            infile.seekg( 0, std::ios_base::beg );
+            
+            vector<char> message(msgLength); //will hold the message contents    
+            infile.read(message.data(), msgLength);
+            infile.close();
+
+            string msgStr = string(message.begin(), message.end());
             string delimiter = "END";
 
             size_t msgEnd = msgStr.find(delimiter);
@@ -70,17 +75,9 @@ int main(int argc, char *argv[]){
 
             //maps the code to the character it stands for 
             while ((pos = msgStr.find(delimiter)) != string::npos){
-                // if (test > 100){
-                //     break;
-                // }
-                test ++;
                 codeStr = msgStr.substr(0, pos);
-                // if (codeStr.length() == 0){
-                //     continue;
-                // }
                 codes[codeStr.substr(1,codeStr.length())] = codeStr[0];
                 msgStr.erase(0, pos + delimiter.length());
-                cout << codeStr << endl;
             }
 
             infile.close();
@@ -90,20 +87,19 @@ int main(int argc, char *argv[]){
             return 1; 
         }
 
-        cout << mess << endl;
         string decMsg = decode_1263(mess);
-        cout << decMsg << endl;
+
         //overwrites original file with decoded message 
-        // ofstream outfile (argv[1], ios::binary|ios::out|ios::trunc);
-        // outfile << decMsg;
+        ofstream outfile (argv[1], ios::binary|ios::out|ios::trunc);
+        outfile << decMsg;
 
-        // //rename the file without .huf 
-        // fileName = fileName.substr(0, fileName.find_last_of("."));
-        // char * newFileName = (char *)alloca(fileName.size() + 1);
-        // memcpy(newFileName, fileName.c_str(), fileName.size()+1);
-        // rename(argv[1], newFileName);
+        //rename the file without .huf 
+        fileName = fileName.substr(0, fileName.find_last_of("."));
+        char * newFileName = (char *)alloca(fileName.size() + 1);
+        memcpy(newFileName, fileName.c_str(), fileName.size()+1);
+        rename(argv[1], newFileName);
 
-        // outfile.close();
+        outfile.close();
 
     } else {
         usage_1263(argv[0], "Incorrect number of arguments.");
