@@ -8,10 +8,12 @@
 #include <cstring>
 #include <alloca.h>
 #include <limits>
+#include <algorithm>
 
 using namespace std;
 
-map<string, char> codes; //stores the code then the character the code represents 
+vector<string> g_codes; //stores the huffman code representation of each character 
+string g_data = ""; //stores the data or characters 
 
 //usage_1263 function to tell the user how to run the program  
 void usage_1263(char *progname, string msg){
@@ -19,15 +21,16 @@ void usage_1263(char *progname, string msg){
     cerr << "usage is: " << progname<< " [filename]" << endl;
 }
 
-//uses the codes map to convert the message from huffman 
+//uses the codes to convert the message from huffman 
 string decode_1263(string message){
     string encStr = "";
     string decMsg = "";
     for (int i=0; i<message.length(); i++){
         encStr += message[i];
-        if (codes.find(encStr) != codes.end()){
-            // cout << codes[encStr];
-            decMsg += codes[encStr];
+        ptrdiff_t pos = find(g_codes.begin(), g_codes.end(), encStr) - g_codes.begin();
+        if (pos < g_codes.size()){
+            // cout << g_data[pos];
+            decMsg += g_data[pos];
             encStr = "";
         }
     }
@@ -76,7 +79,8 @@ int main(int argc, char *argv[]){
             //keeps finding delimiter to map the code to the character it stands for 
             while ((pos = msgStr.find(delimiter)) != string::npos){
                 codeStr = msgStr.substr(0, pos); 
-                codes[codeStr.substr(1,codeStr.length())] = codeStr[0];
+                g_codes.push_back(codeStr.substr(1,codeStr.length()));
+                g_data.push_back(codeStr[0]);
                 msgStr.erase(0, pos + delimiter.length());
             }
             

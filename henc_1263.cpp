@@ -5,14 +5,13 @@
 #include <string>
 #include <vector>
 #include <math.h>
-#include <map>
 #include <limits>
 
 using namespace std;
 
-map<char, string> codeMap; //where the string is the huffman code representing the char: data
-map<char, int> freqMap; //char: data, int: number of times character appears in message
-
+string g_dataArray=""; //every unique character in file 
+vector<int> g_freq; //frequencies of each unique char 
+vector<string> g_codes; //the huffman codes 
 
 //usage function to tell the user how to run the program  
 void usage_1263(char *progname, string msg){
@@ -74,13 +73,13 @@ void buildMinHeap_1263(minHeap_1263 * A){
 }
 
 //create minHeap from map
-struct minHeap_1263 createMinHeap_1263(map<char,int> freqMap){
+struct minHeap_1263 createMinHeap_1263(){
     minHeap_1263 heap = minHeap_1263();
-    heap.size = freqMap.size();
-    for (map<char,int>::iterator it=freqMap.begin();it!=freqMap.end(); it++){
+    heap.size = g_dataArray.length();
+     for (int i = 0; i<g_dataArray.length(); i++){
         minHeapNode_1263 * node = new minHeapNode_1263();
-        node->data = it->first;
-        node->freq = it->second;
+        node->data = g_dataArray[i];
+        node->freq = g_freq[i];
         (heap.nodes).push_back(node);
     }
     buildMinHeap_1263(&heap);
@@ -115,10 +114,12 @@ void computeFreq_1263(vector<char> message){
     for (int i=0; i<message.size(); i++){
 
         //if not in map, add new entry 
-        if (freqMap.find(message[i]) == freqMap.end()){
-            freqMap[message[i]] = 1;
+        if (g_dataArray.find(message[i]) == string::npos){
+            g_dataArray.push_back(message[i]);
+            g_freq.push_back(1);
+            g_codes.push_back(""); //necessary for indexing codes using dataArray later
         } else { //otherwise increment freq count 
-            freqMap[message[i]]++;
+            g_freq[g_dataArray.find(message[i])]++;
         }
     }
 }
@@ -144,7 +145,7 @@ struct minHeapNode_1263 * buildHuffmanTree_1263(minHeap_1263 * A){
 void printHuffmanCodes_1263(minHeapNode_1263 * root, string code, int index){
     //if leaf of tree, store code in codes array 
     if (!(root->left) && !(root->right)){
-        codeMap[root->data] = code;
+        g_codes.at(g_dataArray.find(root->data)) = code;
     }
 
     if (root->left){ 
@@ -172,7 +173,7 @@ void encodeMessage_1263(const char * fileName, vector<char> message){
     ofstream outfile (fileName, ios::binary);
     
     for (int i=0; i<message.size(); i++){
-        string code = codeMap[message[i]];
+        string code = g_codes[g_dataArray.find(message[i])];
         outfile << code;
         // cout << code << endl;
     }
@@ -181,9 +182,9 @@ void encodeMessage_1263(const char * fileName, vector<char> message){
     outfile << delimiter;
 
     //output to file the character then huffman code as a key for decoding 
-    for (map<char, string>::iterator it=codeMap.begin(); it!=codeMap.end(); it++){
-        outfile << it->first << it->second << delimiter;
-        // cout << it->first << it->second << endl;
+    for (int i=0; i<g_dataArray.length(); i++){
+        outfile << g_dataArray[i] << g_codes[i] << delimiter;
+        // cout << g_dataArray[i] << g_codes[i] << delimiter;
     }
 
     outfile.close();
@@ -208,7 +209,7 @@ int main(int argc, char *argv[]){
             
             computeFreq_1263(message);
 
-            minHeap_1263 heap = createMinHeap_1263(freqMap);
+            minHeap_1263 heap = createMinHeap_1263();
             // printHeap_1263(&heap);
             minHeapNode_1263 * root = buildHuffmanTree_1263(&heap);
 
