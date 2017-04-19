@@ -178,7 +178,7 @@ void encodeMessage_1263(const char * fileName, vector<char> message){
     }
 
     string delimiter = "END"; //arbitrary phrase to mark end of message, used for decoding
-    outfile << endMsg;
+    outfile << delimiter;
 
     //output to file the character then huffman code as a key for decoding 
     for (map<char, string>::iterator it=codeMap.begin(); it!=codeMap.end(); it++){
